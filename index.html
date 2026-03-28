@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>GitHub Editor</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; padding-top: 50px; background: #f0f2f5; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); width: 350px; }
+        textarea { width: 100%; height: 100px; margin: 15px 0; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; resize: none; }
+        button { width: 100%; padding: 12px; cursor: pointer; background: #000; color: #fff; border: none; border-radius: 8px; font-weight: bold; transition: 0.3s; }
+        button:hover { background: #333; }
+        #status { margin-top: 15px; font-size: 14px; text-align: center; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h3>Змінити текст</h3>
+    <textarea id="msg" placeholder="Введіть щось..."></textarea>
+    <button onclick="save()">Оновити файл</button>
+    <div id="status"></div>
+</div>
+
+<script>
+    async function save() {
+        const status = document.getElementById('status');
+        const text = document.getElementById('msg').value;
+        
+        // Твій токен
+        const key = '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';
+        
+        // Твоє ПРЯМЕ посилання (без api.)
+        const url = 'https://github.com';
+
+        // Скрипт сам додає 'api.' та прибирає зайве перед відправкою
+        const callUrl = url.replace('github.com', '://api.github.com').replace('/edit/main/', '/contents/');
+
+        status.style.color = "gray";
+        status.innerText = "Зберігаю...";
+
+        try {
+            // Отримуємо поточну версію
+            const res = await fetch(callUrl, { headers: { 'Authorization': `token ${key}` } });
+            const data = await res.json();
+
+            // Відправляємо новий текст
+            const update = await fetch(callUrl, {
+                method: 'PUT',
+                headers: { 'Authorization': `token ${key}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: "upd",
+                    content: btoa(unescape(encodeURIComponent(text))),
+                    sha: data.sha
+                })
+            });
+
+            if (update.ok) {
+                status.style.color = "green";
+                status.innerText = "✅ Текст на GitHub змінено!";
+            } else {
+                status.style.color = "red";
+                status.innerText = "❌ Помилка: " + update.status;
+            }
+        } catch (e) {
+            status.style.color = "red";
+            status.innerText = "❌ Помилка мережі";
+        }
+    }
+</script>
+
+</body>
+</html>
