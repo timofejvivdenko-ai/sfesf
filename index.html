@@ -4,69 +4,73 @@
     <meta charset="UTF-8">
     <title>GitHub Editor</title>
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; padding-top: 50px; background: #f0f2f5; }
-        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); width: 350px; }
-        textarea { width: 100%; height: 100px; margin: 15px 0; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; resize: none; }
-        button { width: 100%; padding: 12px; cursor: pointer; background: #000; color: #fff; border: none; border-radius: 8px; font-weight: bold; transition: 0.3s; }
-        button:hover { background: #333; }
-        #status { margin-top: 15px; font-size: 14px; text-align: center; font-weight: bold; }
+        body { font-family: sans-serif; padding: 40px; text-align: center; }
+        textarea { width: 100%; max-width: 400px; height: 100px; margin: 10px 0; padding: 10px; }
+        button { padding: 10px 20px; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 5px; }
+        #status { margin-top: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h3>Змінити текст</h3>
-    <textarea id="msg" placeholder="Введіть щось..."></textarea>
-    <button onclick="save()">Оновити файл</button>
+    <h3>Редагувати файл на GitHub</h3>
+    <textarea id="textContent" placeholder="Введіть текст..."></textarea><br>
+    <button onclick="saveChanges()">Зберегти зміни</button>
     <div id="status"></div>
-</div>
 
-<script>
-    async function save() {
-        const status = document.getElementById('status');
-        const text = document.getElementById('msg').value;
-        
-        // Твій токен
-        const key = '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';
-        
-        // Твоє ПРЯМЕ посилання (без api.)
-        const url = 'https://github.com';
+    <script>
+        async function saveChanges() {
+            const status = document.getElementById('status');
+            const newText = document.getElementById('textContent').value;
+            
+            // ТВОЇ ДАНІ
+            const TOKEN = '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';
+            // Пряме посилання на API для твого репозиторію:
+            const API_URL = 'https://api.github.com';
 
-        // Скрипт сам додає 'api.' та прибирає зайве перед відправкою
-        const callUrl = url.replace('github.com', '://api.github.com').replace('/edit/main/', '/contents/');
+            status.style.color = "blue";
+            status.innerText = "⏳ Перевіряю файл...";
 
-        status.style.color = "gray";
-        status.innerText = "Зберігаю...";
+            try {
+                // 1. Отримуємо дані про файл (і його SHA)
+                const getRes = await fetch(API_URL, {
+                    headers: { 'Authorization': `token ${TOKEN}` }
+                });
 
-        try {
-            // Отримуємо поточну версію
-            const res = await fetch(callUrl, { headers: { 'Authorization': `token ${key}` } });
-            const data = await res.json();
+                if (getRes.status === 404) {
+                    throw new Error("Файл 'textlol' не знайдено в репозиторії 'sfesf'. Перевір назву!");
+                }
 
-            // Відправляємо новий текст
-            const update = await fetch(callUrl, {
-                method: 'PUT',
-                headers: { 'Authorization': `token ${key}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    message: "upd",
-                    content: btoa(unescape(encodeURIComponent(text))),
-                    sha: data.sha
-                })
-            });
+                const fileData = await getRes.json();
 
-            if (update.ok) {
-                status.style.color = "green";
-                status.innerText = "✅ Текст на GitHub змінено!";
-            } else {
+                // 2. Оновлюємо файл
+                const putRes = await fetch(API_URL, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: "Оновлення через сайт",
+                        content: btoa(unescape(encodeURIComponent(newText))),
+                        sha: fileData.sha // Важливо: без цього буде 409 помилка
+                    })
+                });
+
+                if (putRes.ok) {
+                    status.style.color = "green";
+                    status.innerText = "✅ Текст успішно змінено!";
+                } else {
+                    const err = await putRes.json();
+                    status.style.color = "red";
+                    status.innerText = "❌ Помилка: " + err.message;
+                }
+
+            } catch (e) {
                 status.style.color = "red";
-                status.innerText = "❌ Помилка: " + update.status;
+                status.innerText = "❌ " + e.message;
             }
-        } catch (e) {
-            status.style.color = "red";
-            status.innerText = "❌ Помилка мережі";
         }
-    }
-</script>
-
+    </script>
 </body>
 </html>
+
