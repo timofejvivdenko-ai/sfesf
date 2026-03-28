@@ -2,75 +2,75 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>GitHub Editor</title>
+    <title>GitHub Editor Fix</title>
     <style>
-        body { font-family: sans-serif; padding: 40px; text-align: center; }
-        textarea { width: 100%; max-width: 400px; height: 100px; margin: 10px 0; padding: 10px; }
-        button { padding: 10px 20px; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 5px; }
-        #status { margin-top: 15px; font-weight: bold; }
+        body { font-family: sans-serif; text-align: center; padding: 50px; background: #fafafa; }
+        .box { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); display: inline-block; }
+        textarea { width: 300px; height: 100px; padding: 10px; border-radius: 8px; border: 1px solid #ddd; }
+        button { display: block; width: 100%; margin-top: 10px; padding: 10px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; }
+        #status { margin-top: 15px; font-weight: bold; font-size: 14px; }
     </style>
 </head>
 <body>
 
-    <h3>Редагувати файл на GitHub</h3>
-    <textarea id="textContent" placeholder="Введіть текст..."></textarea><br>
-    <button onclick="saveChanges()">Зберегти зміни</button>
+<div class="box">
+    <h3>Змінити текст на GitHub</h3>
+    <textarea id="textInput" placeholder="Напишіть щось..."></textarea>
+    <button onclick="updateFile()">Оновити зараз</button>
     <div id="status"></div>
+</div>
 
-    <script>
-        async function saveChanges() {
-            const status = document.getElementById('status');
-            const newText = document.getElementById('textContent').value;
-            
-            // ТВОЇ ДАНІ
-            const TOKEN = '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';
-            // Пряме посилання на API для твого репозиторію:
-            const API_URL = 'https://api.github.com';
+<script>
+    async function updateFile() {
+        const status = document.getElementById('status');
+        const text = document.getElementById('textInput').value;
+        
+        // ДАНІ
+        const TOKEN = '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';
+        const API_URL = 'https://api.github.com';
 
-            status.style.color = "blue";
-            status.innerText = "⏳ Перевіряю файл...";
+        status.style.color = "blue";
+        status.innerText = "⏳ Оновлюю...";
 
-            try {
-                // 1. Отримуємо дані про файл (і його SHA)
-                const getRes = await fetch(API_URL, {
-                    headers: { 'Authorization': `token ${TOKEN}` }
-                });
+        try {
+            // 1. Спочатку отримуємо SHA файлу
+            const getRes = await fetch(API_URL, {
+                headers: { 'Authorization': `token ${TOKEN}` }
+            });
+            const fileData = await getRes.json();
 
-                if (getRes.status === 404) {
-                    throw new Error("Файл 'textlol' не знайдено в репозиторії 'sfesf'. Перевір назву!");
-                }
+            if (!getRes.ok) throw new Error("Файл не знайдено");
 
-                const fileData = await getRes.json();
+            // 2. Відправляємо новий текст
+            const putRes = await fetch(API_URL, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${TOKEN}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: "update",
+                    content: btoa(unescape(encodeURIComponent(text))),
+                    sha: fileData.sha
+                })
+            });
 
-                // 2. Оновлюємо файл
-                const putRes = await fetch(API_URL, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `token ${TOKEN}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        message: "Оновлення через сайт",
-                        content: btoa(unescape(encodeURIComponent(newText))),
-                        sha: fileData.sha // Важливо: без цього буде 409 помилка
-                    })
-                });
-
-                if (putRes.ok) {
-                    status.style.color = "green";
-                    status.innerText = "✅ Текст успішно змінено!";
-                } else {
-                    const err = await putRes.json();
-                    status.style.color = "red";
-                    status.innerText = "❌ Помилка: " + err.message;
-                }
-
-            } catch (e) {
+            if (putRes.ok) {
+                status.style.color = "green";
+                status.innerText = "✅ Успішно! Перевір GitHub.";
+            } else {
                 status.style.color = "red";
-                status.innerText = "❌ " + e.message;
+                status.innerText = "❌ Помилка API: " + putRes.status;
             }
+
+        } catch (err) {
+            // ЯКЩО ЗНОВУ ПОМИЛКА МЕРЕЖІ — СПРОБУЄМО ПІДКАЗАТИ РІШЕННЯ
+            status.style.color = "red";
+            status.innerText = "❌ Помилка з'єднання. Спробуй відкрити цей файл через режим Інкогніто (Ctrl+Shift+N).";
+            console.error(err);
         }
-    </script>
+    }
+</script>
+
 </body>
 </html>
-
