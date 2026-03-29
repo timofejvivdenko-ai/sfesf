@@ -1,1 +1,1 @@
-awadad
+print("hi")
