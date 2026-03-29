@@ -1,29 +1,63 @@
-<script>
-async function fix() {
-    const token = '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';
-    const url = 'https://api.github.com';
-    
-    try {
-        // Крок 1: Отримати SHA
-        const res = await fetch(url, { headers: { 'Authorization': `token ${token}` } });
-        const data = await res.json();
-        
-        // Крок 2: Оновити текст на "ПРИВІТ" (для тесту)
-        const update = await fetch(url, {
-            method: 'PUT',
-            headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                message: "test",
-                content: btoa("Hi there!"), // Текст "Hi there!" у форматі Base64
-                sha: data.sha
-            })
-        });
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>GitHub Fix</title>
+</head>
+<body style="text-align:center; padding-top:50px; font-family:sans-serif;">
 
-        if (update.ok) alert("УСПІХ! Текст на GitHub змінено.");
-        else alert("Помилка GitHub: " + update.status);
-    } catch (e) {
-        alert("Помилка мережі: " + e.message);
-    }
-}
-</script>
-<button onclick="fix()" style="padding: 20px; font-size: 20px;">НАТИСНИ МЕНЕ ДЛЯ ТЕСТУ</button>
+    <textarea id="txt" style="width:300px; height:100px;" placeholder="Введіть текст..."></textarea><br><br>
+    <button onclick="save()" style="padding:15px 30px; cursor:pointer; background:#28a745; color:white; border:none; border-radius:5px;">
+        ОНОВИТИ GITHUB
+    </button>
+    <p id="out" style="font-weight:bold; margin-top:20px;"></p>
+
+    <script>
+        async function save() {
+            const out = document.getElementById('out');
+            const val = document.getElementById('txt').value;
+            const token = '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';
+            
+            // ВИКОРИСТОВУЄМО ПРОКСІ ДЛЯ ОБХОДУ ПОМИЛКИ МЕРЕЖІ
+            const api = 'https://corsproxy.io?' + encodeURIComponent('https://api.github.com');
+
+            out.innerText = "⏳ Пробую обійти захист...";
+            out.style.color = "blue";
+
+            try {
+                // 1. Отримуємо SHA (через проксі)
+                const get = await fetch(api, {
+                    headers: { 'Authorization': `token ${token}` }
+                });
+                const data = await get.json();
+
+                // 2. Оновлюємо файл (через той самий проксі)
+                const put = await fetch(api, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: "fixed update",
+                        content: btoa(unescape(encodeURIComponent(val))),
+                        sha: data.sha
+                    })
+                });
+
+                if (put.ok) {
+                    out.innerText = "✅ ПЕРЕМОГА! Текст на GitHub змінено!";
+                    out.style.color = "green";
+                } else {
+                    out.innerText = "❌ GitHub відмовив: " + put.status;
+                    out.style.color = "red";
+                }
+            } catch (e) {
+                out.innerText = "❌ Навіть проксі не допоміг. Спробуй з телефону!";
+                out.style.color = "red";
+                console.error(e);
+            }
+        }
+    </script>
+</body>
+</html>
