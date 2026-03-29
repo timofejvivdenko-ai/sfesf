@@ -2,87 +2,85 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>GitHub Final Fix</title>
+    <title>GitHub Editor Fix</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 50px; background: #f4f7f6; }
+        .box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); display: inline-block; }
+        textarea { width: 300px; height: 50px; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; }
+        button { display: block; width: 100%; margin-top: 15px; padding: 12px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        #status { margin-top: 15px; font-weight: bold; }
+    </style>
 </head>
-<body style="text-align:center; padding-top:50px; font-family:sans-serif; background:#f9f9f9;">
+<body>
 
-    <div style="background:white; padding:30px; display:inline-block; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
-        <h3>Оновити текст на GitHub</h3>
-        <textarea id="myText" style="width:300px; height:100px; padding:10px;" placeholder="Введіть текст..."></textarea><br><br>
-        <button id="btn" onclick="run()" style="padding:12px 25px; cursor:pointer; background:#007bff; color:white; border:none; border-radius:5px; font-weight:bold;">
-            ОНОВИТИ ФАЙЛ
-        </button>
-        <p id="info" style="margin-top:20px; font-weight:bold;"></p>
-    </div>
+<div class="box">
+    <h3>Змінити textlol.txt</h3>
+    <textarea id="textInput" placeholder="Напишіть новий текст..."></textarea>
+    <button onclick="updateGithub()">Оновити на GitHub</button>
+    <div id="status"></div>
+</div>
 
-    <script>
-        async function run() {
-            const info = document.getElementById('info');
-            const btn = document.getElementById('btn');
-            const val = document.getElementById('myText').value;
+<script>
+    async function updateGithub() {
+        const status = document.getElementById('status');
+        const text = document.getElementById('textInput').value;
+        
+        // ТВОЇ ДАНІ (ЖОРСТКО ПРОПИСАНІ)
+        const TOKEN = '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';
+        const OWNER = 'timofejvivdenko-ai';
+        const REPO = 'sfesf';
+        const FILE = 'textlol.txt'; // Додано .txt
+
+        const API_URL = `https://api.github.com{OWNER}/${REPO}/contents/${FILE}`;
+
+        status.style.color = "blue";
+        status.innerText = "⏳ З'єднуюсь з GitHub...";
+
+        try {
+            // 1. Отримуємо SHA (через проксі, щоб не було "Помилки мережі")
+            const proxy = 'https://corsproxy.io?' + encodeURIComponent(API_URL);
             
-            // ТВОЇ ДАНІ
-            const token = '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';
-            const owner = 'timofejvivdenko-ai';
-            const repo = 'sfesf';
-            
-            // Спробуємо два варіанти назви файлу (з .txt і без)
-            const fileVariants = ['textlol', 'textlol.txt'];
-            
-            info.innerText = "⏳ Шукаю файл у репозиторії...";
-            info.style.color = "blue";
-            btn.disabled = true;
+            const getRes = await fetch(proxy, {
+                headers: { 'Authorization': `token ${TOKEN}` }
+            });
 
-            try {
-                let fileData = null;
-                let finalPath = "";
-
-                // Шукаємо правильну назву файлу
-                for (let path of fileVariants) {
-                    const checkUrl = `https://corsproxy.io?` + encodeURIComponent(`https://api.github.com{owner}/${repo}/contents/${path}`);
-                    const res = await fetch(checkUrl, { headers: { 'Authorization': `token ${token}` } });
-                    if (res.ok) {
-                        fileData = await res.json();
-                        finalPath = path;
-                        break;
-                    }
-                }
-
-                if (!fileData) {
-                    throw new Error("Файл не знайдено. Створи файл 'textlol' у репозиторії 'sfesf' на GitHub!");
-                }
-
-                // Оновлюємо знайдений файл
-                const updateUrl = `https://corsproxy.io?` + encodeURIComponent(`https://api.github.com{owner}/${repo}/contents/${finalPath}`);
-                const put = await fetch(updateUrl, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `token ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        message: "fixed 404 update",
-                        content: btoa(unescape(encodeURIComponent(val))),
-                        sha: fileData.sha
-                    })
-                });
-
-                if (put.ok) {
-                    info.innerText = "✅ УСПІХ! Текст оновлено.";
-                    info.style.color = "green";
-                } else {
-                    const err = await put.json();
-                    info.innerText = "❌ Помилка: " + err.message;
-                    info.style.color = "red";
-                }
-
-            } catch (e) {
-                info.innerText = "❌ " + e.message;
-                info.style.color = "red";
-            } finally {
-                btn.disabled = false;
+            if (!getRes.ok) {
+                const err = await getRes.json();
+                throw new Error("GitHub не бачить файл: " + err.message);
             }
+
+            const fileData = await getRes.json();
+
+            // 2. Відправляємо оновлення
+            const putRes = await fetch(proxy, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${TOKEN}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: "Оновлено через сайт",
+                    content: btoa(unescape(encodeURIComponent(text))),
+                    sha: fileData.sha
+                })
+            });
+
+            if (putRes.ok) {
+                status.style.color = "green";
+                status.innerText = "✅ УСПІХ! Текст у файлі змінено.";
+            } else {
+                const err = await putRes.json();
+                status.style.color = "red";
+                status.innerText = "❌ Помилка API: " + err.message;
+            }
+
+        } catch (err) {
+            status.style.color = "red";
+            status.innerText = "❌ " + err.message;
+            console.error(err);
         }
-    </script>
+    }
+</script>
+
 </body>
 </html>
