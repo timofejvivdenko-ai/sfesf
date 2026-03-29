@@ -1,2 +1,1 @@
-Action: Update
-Content: print("lol")
+ Image all
