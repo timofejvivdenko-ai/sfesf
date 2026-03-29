@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>GitHub Editor Fix</title>
+</head>
+<body style="text-align:center; padding-top:50px; font-family:sans-serif; background:#f4f4f4;">
+
+    <div style="background:white; padding:30px; display:inline-block; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.1);">
+        <h3>Редагувати textlol.txt</h3>
+        <textarea id="myText" style="width:300px; height:100px; padding:10px; border-radius:5px; border:1px solid #ccc;" placeholder="Введіть новий текст..."></textarea><br><br>
+        <button id="btn" onclick="updateFile()" style="padding:12px 25px; cursor:pointer; background:#28a745; color:white; border:none; border-radius:5px; font-weight:bold;">
+            ОНОВИТИ ФАЙЛ
+        </button>
+        <p id="status" style="margin-top:20px; font-weight:bold;"></p>
+    </div>
+
+    <script>
+        async function updateFile() {
+            const status = document.getElementById('status');
+            const text = document.getElementById('myText').value;
+            
+            // ДАНІ
+            const token = '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';
+            const owner = 'timofejvivdenko-ai';
+            const repo = 'sfesf';
+            const path = 'textlol.txt'; // ТУТ ТЕПЕР ТОЧНО .txt
+
+            // Проксі для обходу блокування браузером
+            const apiUrl = `https://api.github.com{owner}/${repo}/contents/${path}`;
+            const proxyUrl = 'https://corsproxy.io?' + encodeURIComponent(apiUrl);
+
+            status.style.color = "blue";
+            status.innerText = "⏳ З'єднуюсь з GitHub...";
+
+            try {
+                // 1. Отримуємо SHA файлу
+                const getRes = await fetch(proxyUrl, {
+                    headers: { 'Authorization': `token ${token}` }
+                });
+
+                if (!getRes.ok) {
+                    throw new Error("Файл не знайдено! Перевір, чи він є в репозиторії.");
+                }
+
+                const fileData = await getRes.json();
+
+                // 2. Оновлюємо текст
+                const putRes = await fetch(proxyUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: "update via web",
+                        content: btoa(unescape(encodeURIComponent(text))),
+                        sha: fileData.sha
+                    })
+                });
+
+                if (putRes.ok) {
+                    status.style.color = "green";
+                    status.innerText = "✅ УСПІХ! Текст на GitHub змінено.";
+                } else {
+                    const err = await putRes.json();
+                    status.style.color = "red";
+                    status.innerText = "❌ Помилка API: " + err.message;
+                }
+
+            } catch (e) {
+                status.style.color = "red";
+                status.innerText = "❌ Помилка: " + e.message;
+            }
+        }
+    </script>
+</body>
+</html>
