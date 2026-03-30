@@ -1,1 +1,4 @@
-print("hi1")
+local target = TimaVivdenko
+if target.Character and target.Character:FindFirstChild("Humanoid") then
+    target.Character.Humanoid.WalkSpeed = 100
+end
