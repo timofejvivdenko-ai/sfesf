@@ -1,35 +1,9 @@
-UPTADE 1.1
+UPTADE 1.1.1
 
 What We added?
-1. games with backdoor
-2. added 30 languages:
-English
-Ukrainian
-Polish
-German
-French
-Spanish
-Italian
-Turkish
-Portuguese
-Dutch
-Swedish
-Norwegian
-Danish
-Finnish
-Czech
-Hungarian
-Romanian
-Greek
-Bulgarian
-Slovak
-Estonian
-Latvian
-Lithuanian
-Japanese
-Korean
-Chinese
-Thai
-Vietnamese
-Indonesian
-Arabic
+1. find player by username
+i mean find player on server in game and there using script
+
+bugs fixed!
+1. cant execute scripts
+2. cant see uptade log
