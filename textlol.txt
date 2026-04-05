@@ -1,1 +1,1 @@
-waddwa
+print("lol")
