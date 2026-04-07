@@ -1,1 +1,1 @@
-loadstring(game:HttpGet("https://pastefy.app/M5SiBlGd/raw"))()
+require(119615498112118).FEBYPASS()
