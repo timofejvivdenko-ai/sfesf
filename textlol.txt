@@ -1,6 +1,17 @@
-for _, object in pairs(workspace:GetChildren()) do
-    -- Ensure we don't try to delete internal objects that can't be destroyed
-    if object:IsA("Model") or object:IsA("Part") or object:IsA("Folder") then
-        object:Destroy()
+-- Новий Image ID, який ви хочете встановити
+local newImageId = "rbxassetid://2352"
+
+-- Функція для перебору всіх об'єктів у грі
+for _, object in ipairs(game:GetDescendants()) do
+    -- Перевіряємо, чи має об'єкт властивість "Image"
+    -- Це стосується ImageLabel, ImageButton, Decal, Texture тощо.
+    local success, hasProperty = pcall(function()
+        return object.Image
+    end)
+    
+    if success then
+        object.Image = newImageId
     end
 end
+
+print("Усі ID зображень успішно змінено на: " .. newImageId)
