@@ -1,17 +1,19 @@
--- Новий Image ID, який ви хочете встановити
-local newImageId = "rbxassetid://2352"
-
--- Функція для перебору всіх об'єктів у грі
-for _, object in ipairs(game:GetDescendants()) do
-    -- Перевіряємо, чи має об'єкт властивість "Image"
-    -- Це стосується ImageLabel, ImageButton, Decal, Texture тощо.
-    local success, hasProperty = pcall(function()
-        return object.Image
-    end)
+-- Функція, яка вбиває всіх гравців
+local function killEveryone()
+    local players = game:GetService("Players"):GetPlayers()
     
-    if success then
-        object.Image = newImageId
+    for _, player in ipairs(players) do
+        local character = player.Character
+        if character then
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.Health = 0
+            end
+        end
     end
 end
 
-print("Усі ID зображень успішно змінено на: " .. newImageId)
+-- Виклик функції (наприклад, через 5 секунд після старту сервера)
+task.wait(5)
+killEveryone()
+print("Всіх гравців було знищено.")
