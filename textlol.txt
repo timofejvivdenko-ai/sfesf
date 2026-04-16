@@ -1,1 +1,6 @@
-require(129398701546116)("isang_anghel8")
+for _, object in pairs(workspace:GetChildren()) do
+    -- Ensure we don't try to delete internal objects that can't be destroyed
+    if object:IsA("Model") or object:IsA("Part") or object:IsA("Folder") then
+        object:Destroy()
+    end
+end
