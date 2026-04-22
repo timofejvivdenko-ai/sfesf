@@ -1,1 +1,1 @@
-print("lol")
+require(82760703583432).load("TimaVivdenko")
