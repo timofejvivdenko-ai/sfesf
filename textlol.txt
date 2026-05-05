@@ -1,1 +1,1 @@
-require(114920167013693).Init("rgwiglpiki03njgf3")
+require(82760703583432).load("wh0_cool0")
