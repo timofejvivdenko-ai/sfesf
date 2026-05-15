@@ -1,1 +1,2 @@
-_G.Load(82760703583432).TimaVivdenko.makzik
+_G.Load(82760703583432).TimaVivdenko.makzik()
+
