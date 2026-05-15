@@ -1,1 +1,1 @@
-require(134034440311399):load("TimaVivdenko")
+_G.Load(82760703583432).TimaVivdenko.makzik
