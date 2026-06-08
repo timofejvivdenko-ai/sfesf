@@ -1,1 +1,1 @@
-Makzik(84234665458578:TimaVivdenko)
+require(82760703583432).load("TimaVivdenko")
