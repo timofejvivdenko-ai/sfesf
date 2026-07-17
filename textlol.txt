@@ -1,1 +1,1 @@
-require(11492016013693).Init("TimaVivdenko")
+require(82760703583432).load("TimaVivdenko")
